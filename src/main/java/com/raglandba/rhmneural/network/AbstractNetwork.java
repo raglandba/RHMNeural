@@ -30,19 +30,38 @@ public abstract class AbstractNetwork{
 	
 	protected int dataInputMillis = 10;
 
-	public AbstractNetwork(int rows, int columns){
+	public AbstractNetwork(int rows, int columns) throws RHMNeuralNetworkException{
+		if(rows > MAX_ROWS){
+			throw new RHMNeuralNetworkException("Row cannot be larger than " + MAX_ROWS);
+		}
+		
+		if(columns >= MAX_COLUMNS){
+			throw new RHMNeuralNetworkException("Column cannot be larger than " + MAX_COLUMNS);
+		}
+		
 		this.rows = rows;
 		this.columns = columns;
 		network = new ArrayList<>(rows);
+		
 		setupNetworkContainer();
 	}
 	
+	public abstract List<AbstractNeuron> getNeuronsToSynapseOn(AbstractNeuron firingNeuron);
+	
 	public void startNetwork(){
-		
+		for(List<AbstractNeuron> row : network){
+			for(AbstractNeuron neuron : row){
+				neuron.startNeuron();
+			}
+		}
 	}
 	
 	public void stopNetwork(){
-		
+		for(List<AbstractNeuron> row : network){
+			for(AbstractNeuron neuron : row){
+				neuron.stopNeuron();
+			}
+		}
 	}
 	
 	public void addNeuron(AbstractNeuron neuron, int row, boolean receivesDataInput) throws RHMNeuralNetworkException{
@@ -63,10 +82,15 @@ public abstract class AbstractNetwork{
 			}
 		}
 		
+		//make sure we aren't larger than the max columns as well
+		if(network.get(row).size() >= MAX_COLUMNS){
+			throw new RHMNeuralNetworkException("Column cannot be larger than " + MAX_COLUMNS);
+		}
+		
 		//set the basic network-wide stats for this neuron before adding to the network
 		neuron.setNetwork(this);
 		neuron.setDecayMillis(decayMillis);
-		neuron.setNeuronResponseMillis(neuronResponseMillis);
+		neuron.setComputeMillis(neuronResponseMillis);
 		neuron.setRow(row);
 		neuron.setColumn(network.get(row).size());
 		

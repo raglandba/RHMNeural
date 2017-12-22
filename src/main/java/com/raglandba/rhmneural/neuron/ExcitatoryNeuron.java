@@ -30,12 +30,21 @@ public class ExcitatoryNeuron extends AbstractNeuron{
 
 	@Override
 	public synchronized void synapseIn(double excitation, double inhibition){
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		excitationFactor = (excitationFactor + excitation) / 2;
+		inhibitionFactor = (inhibitionFactor + inhibition) / 2;
 	}
 
 	@Override
 	protected void synapseOut(){
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+		if(neuronsToSynapseOn != null && neuronsToSynapseOn.size() > 0){
+			for(AbstractNeuron neuron : neuronsToSynapseOn){
+				neuron.synapseIn(excitationOut, inhibitionOut);
+			}
+		}else{
+			for(AbstractNeuron neuron : network.getNeuronsToSynapseOn(this)){
+				neuron.synapseIn(excitationOut, inhibitionOut);
+			}
+		}
 	}
 	
 }
