@@ -13,7 +13,7 @@ public class InhibitoryNeuron extends AbstractNeuron{
 
 	public InhibitoryNeuron(){
 		excitationOut = 0.0;
-		inhibitionOut = 0.3;
+		inhibitionOut = 0.6;
 	}
 
 	public InhibitoryNeuron(double strength) throws RHMNeuralNeuronException{
@@ -29,20 +29,24 @@ public class InhibitoryNeuron extends AbstractNeuron{
 	}
 
 	@Override
-	public synchronized void synapseIn(double excitation, double inhibition){
-		excitationFactor = (excitationFactor + excitation) / 2;
-		inhibitionFactor = (inhibitionFactor + inhibition) / 2;
+	public synchronized void synapseIn(Double excitation, Double inhibition){
+		if(excitation != null){
+			excitationFactor = (excitationFactor + excitation) / 2;
+		}
+		if(inhibition != null){
+			inhibitionFactor = (inhibitionFactor + inhibition) / 2;
+		}
 	}
 
 	@Override
 	protected void synapseOut(){
 		if(neuronsToSynapseOn != null && neuronsToSynapseOn.size() > 0){
 			for(AbstractNeuron neuron : neuronsToSynapseOn){
-				neuron.synapseIn(excitationOut, inhibitionOut);
+				neuron.synapseIn(null, inhibitionFactor);
 			}
 		}else{
 			for(AbstractNeuron neuron : network.getNeuronsToSynapseOn(this)){
-				neuron.synapseIn(excitationOut, inhibitionOut);
+				neuron.synapseIn(null, inhibitionFactor);
 			}
 		}
 	}

@@ -26,7 +26,7 @@ public abstract class AbstractNeuron{
 
 	//reference to the network this neuron belongs to
 	protected AbstractNetwork network;
-	
+
 	//list of specific neurons this neuron should synapseOut to
 	protected List<AbstractNeuron> neuronsToSynapseOn = new ArrayList<>();
 
@@ -49,12 +49,12 @@ public abstract class AbstractNeuron{
 	//how fast the neuron decays back to its resting exciting and inhibition factors
 	protected int decayMillis = 10;
 
-	//how fast this neuron responds to changes in its excitationFactor or inhibitionFactor. A clock-cycle basically. 
+	//how fast this neuron responds to changes in its excitationFactor or inhibitionFactor. A clock-cycle basically.
 	protected int computeMillis = 2;
 
 	//Timer for scheduling our DecayTask
 	protected Timer decayTimer = null;
-	
+
 	//Timer for scheduling our ComputeTask
 	protected Timer computeTimer = null;
 
@@ -63,7 +63,7 @@ public abstract class AbstractNeuron{
 
 		decayTimer = new Timer();
 		computeTimer = new Timer();
-		
+
 		decayTimer.schedule(new DecayTask(), 1, 1);
 		computeTimer.schedule(new ComputeTask(), computeMillis, computeMillis);
 	}
@@ -77,7 +77,7 @@ public abstract class AbstractNeuron{
 			decayTimer.purge();
 			decayTimer = null;
 		}
-		
+
 		//cancel, purge, and null the computeTimer if it isn't already null
 		if(computeTimer != null){
 			computeTimer.cancel();
@@ -88,8 +88,8 @@ public abstract class AbstractNeuron{
 
 	protected abstract void synapseOut();
 
-	public abstract void synapseIn(double excitation, double inhibition);
-	
+	public abstract void synapseIn(Double excitation, Double inhibition);
+
 	//++++++++++++++++++
 	// Compute TimerTask
 	//++++++++++++++++++
@@ -100,12 +100,16 @@ public abstract class AbstractNeuron{
 			if(active == false){
 				return;
 			}
-			
+
 			if(excitationFactor > inhibitionFactor){
+				//fire the neuron
 				synapseOut();
+				//reset the neuron
+				excitationFactor = restingExcitationFactor;
+				inhibitionFactor = restingInhibitionFactor;
 			}
 		}
-		
+
 	}
 
 	//++++++++++++++++++
@@ -113,28 +117,20 @@ public abstract class AbstractNeuron{
 	//++++++++++++++++++
 	protected class DecayTask extends TimerTask{
 
-		//0 based where 0.0 = no decay.       v----> this is 1 because the decay decayTimer runs every 1 millisecond
-		protected double decayAmountFactor = (1 / decayMillis);
-
 		@Override
 		public void run(){
 			if(active == false){
 				return;
 			}
-			
-			//decay in different directions based on which polarization we are at
-			if(excitationFactor > restingExcitationFactor){
-				excitationFactor = excitationFactor * (1 - decayAmountFactor);
-			}else if(excitationFactor < restingExcitationFactor){
-				excitationFactor = excitationFactor * (1 + decayAmountFactor);
-			}
 
-			//decay in different directions based on which polarization we are at
-			if(inhibitionFactor > restingInhibitionFactor){
-				inhibitionFactor = inhibitionFactor * (1 - decayAmountFactor);
-			}else if(inhibitionFactor < restingInhibitionFactor){
-				inhibitionFactor = inhibitionFactor * (1 + decayAmountFactor);
-			}
+			//0.0 = no decay      v----> this is 1 because the decayTimer runs every 1 millisecond
+			double decayFactor = (1.0 / decayMillis);
+
+			double eDiff = restingExcitationFactor - excitationFactor;
+			double iDiff = restingInhibitionFactor - inhibitionFactor;
+
+			excitationFactor = excitationFactor + (eDiff * decayFactor);
+			inhibitionFactor = inhibitionFactor + (iDiff * decayFactor);
 		}
 
 	}
